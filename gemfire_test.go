@@ -24,7 +24,10 @@ func TestGetRegions(t *testing.T) {
 
 func TestGetFunctions(t *testing.T) {
 
-	result, responseCode := getFunctions()
+	api := Api{"http://127.0.0.1","8080"}
+
+
+	result, responseCode := api.getFunctions()
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}

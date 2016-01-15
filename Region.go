@@ -10,7 +10,7 @@ import (
 
 func (api Api) getRegionKeys(regionName string) ([]string, int) {
 
-	r, err := http.Get("http://127.0.0.1:8080/gemfire-api/v1/" + regionName + "/keys")
+	r, err := http.Get(api.Url() + regionName + "/keys")
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -29,7 +29,7 @@ func (api Api) getRegionKeys(regionName string) ([]string, int) {
 func (api Api) getRegions() ([]Region, int) {
 	var m ClusterRegions
 
-	r, err := http.Get("http://127.0.0.1:8080/gemfire-api/v1/")
+	r, err := http.Get(api.Url())
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -52,7 +52,7 @@ func (api Api) getEntry(regionName string, key string) (map[string]string, int) 
 	var entry map[string]string
 	entry = make(map[string]string)
 
-	r, err := http.Get("http://127.0.0.1:8080/gemfire-api/v1/" + regionName + "/" + key)
+	r, err := http.Get(api.Url() + regionName + "/" + key)
 	if err != nil {
 		fmt.Println(err)
 	} else {
