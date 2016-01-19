@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
 )
 
 func (api Api) getFunctions() ([]string, int) {
 
-//	params := make(map[string]string)
+	//	params := make(map[string]string)
 
 	r, err := http.Get(api.Url() + "functions")
 	if err != nil {

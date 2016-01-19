@@ -8,18 +8,14 @@ import (
 
 type Api struct {
 	hostName string
-	port string
+	port     string
 }
 
-func (api Api) Url() string{
-	baseUrl := api.hostName + ":" + api.port + "/gemfire-api/v1/"
-
-	fmt.Println("baseurl",baseUrl)
-	return baseUrl
-
+func (api Api) Url() string {
+	return api.hostName + ":" + api.port + "/gemfire-api/v1/"
 }
 
-type Region struct {
+type RegionDef struct {
 	Name            string `json:"name"`
 	RegionType      string `json:"type"`
 	KeyConstraint   string `json:"key-constraint"`
@@ -27,7 +23,7 @@ type Region struct {
 }
 
 type ClusterRegions struct {
-	Regions []Region
+	Regions []RegionDef
 }
 
 type RegionKeys struct {
@@ -41,24 +37,22 @@ type Functions struct {
 func main() {
 	//	getRegions()
 	//	getFunctions()
-//		getRegionKeys("designer")2
+	//		getRegionKeys("designer")2
 
 	//	iterateJson()
 
-//	params := make(map[string]string)
+	//	params := make(map[string]string)
 
-	api := Api{"http://127.0.0.1","8080"}
+	api := Api{"http://127.0.0.1", "8080"}
 	fmt.Println(api.Url())
 	rand.Seed(int64(time.Now().Nanosecond()))
 	value := rand.Intn(2)
 	fmt.Println(value)
 	fmt.Println(api.getFunctions())
 
-
 }
 
-func buildRequest(baseUrl string, params map[string]string)	 string{
-
+func buildRequest(baseUrl string, params map[string]string) string {
 
 	count := 1
 	if len(params) > 0 {
@@ -75,6 +69,3 @@ func buildRequest(baseUrl string, params map[string]string)	 string{
 	}
 	return baseUrl
 }
-
-
-

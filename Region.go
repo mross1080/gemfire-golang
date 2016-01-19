@@ -5,17 +5,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
+	//	"net/url"
 	"bytes"
+	//	"reflect"
 )
 
 type User struct {
 	Name string
-	id 	 string
+	Id   string
+}
+
+type Region struct {
+	api  Api
+	Name string
 }
 
 func (api Api) getRegionKeys(regionName string) ([]string, int) {
-//	params := make(map[string]string)
+	//	params := make(map[string]string)
 
 	r, err := http.Get(api.Url() + regionName + "/keys")
 	if err != nil {
@@ -33,7 +39,7 @@ func (api Api) getRegionKeys(regionName string) ([]string, int) {
 	return nil, r.StatusCode
 }
 
-func (api Api) getRegions(params map[string]string) ([]Region, int) {
+func (api Api) getRegions(params map[string]string) ([]RegionDef, int) {
 	var m ClusterRegions
 
 	r, err := http.Get(api.Url())
@@ -53,14 +59,13 @@ func (api Api) getRegions(params map[string]string) ([]Region, int) {
 	return m.Regions, r.StatusCode
 }
 
-
-func (api Api) getEntry(regionName string, key string) (map[string]string, int) {
+func (region Region) get(key string) (map[string]string, int) {
 
 	var entry map[string]string
 	entry = make(map[string]string)
-//	params := make(map[string]string)
+	//	params := make(map[string]string)
 
-	r, err := http.Get(api.Url() + regionName + "/" + key)
+	r, err := http.Get(region.api.Url() + region.Name + "/" + key)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -79,12 +84,12 @@ func (api Api) getEntry(regionName string, key string) (map[string]string, int) 
 
 }
 
-func (api Api) getRegion(regionName string, params map[string]string) (map[string][]map[string]string,int) {
-	entry :=  make(map[string][]map[string]string)
+func (api Api) getRegion(regionName string, params map[string]string) (map[string][]map[string]string, int) {
+	entry := make(map[string][]map[string]string)
 
-	url := buildRequest(api.Url() + regionName,params)
+	url := buildRequest(api.Url()+regionName, params)
 	r, err := http.Get(url)
-	fmt.Println("making get to ",api.Url() + regionName)
+	fmt.Println("making get to ", api.Url()+regionName)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -99,28 +104,28 @@ func (api Api) getRegion(regionName string, params map[string]string) (map[strin
 		return entry, r.StatusCode
 	}
 
-
-
 	return entry, 200
 
 }
 
+func (region Region) put(key string, js []uint8) int {
 
-func (api Api) createEntry () {
+	url := region.api.Url() + region.Name + "/?key=" + key
 
+	var body = []byte(string(js))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req.Header.Set("X-Custom-Header", "entry-value")
+	req.Header.Set("Content-Type", "application/json")
 
-	user := User{"Bob Ross","11"}
-	u, err := json.Marshal(user)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
-	var jsonStr = []byte(string(u))
+	defer resp.Body.Close()
 
-	resp, err := http.NewRequest("POST","http://127.0.0.1:8080/gemfire-api/v1/test/", bytes.NewBuffer(jsonStr))
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(b))
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(resp)
+	return resp.StatusCode
 }
