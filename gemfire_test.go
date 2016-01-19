@@ -3,10 +3,8 @@ package gemfireGolang
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"testing"
-	"time"
 	//	"reflect"
 )
 
@@ -20,7 +18,7 @@ func TestGetRegions(t *testing.T) {
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
-
+	fmt.Println(result)
 	if responseCode != 200 && responseCode != 300 {
 		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
@@ -41,7 +39,7 @@ func TestGetRegion(t *testing.T) {
 		t.Fatalf("Set limit of 2 results got back ", len(entries))
 	}
 
-	if responseCode != 200 && responseCode != 300 {
+	if responseCode != 200 {
 		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
 
@@ -56,34 +54,26 @@ func TestGetFunctions(t *testing.T) {
 		t.Fatalf("API response was nil")
 	}
 
-	if responseCode != 200 && responseCode != 300 {
+	if responseCode != 200 {
 		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
 
 }
 
-func TestRegionKeys(t *testing.T) {
+func TestGetKeysForRegion(t *testing.T) {
 
 	api := Api{"http://127.0.0.1", "8080"}
+	region := Region{api, "test"}
 
-	params := make(map[string]string)
-	regions, _ := api.getRegions(params)
+	result, responseCode := api.getRegionKeys(region.Name)
+	if result == nil {
+		t.Fatalf("API response was nil")
+	}
 
-	if len(regions) != 0 {
-		rand.Seed(int64(time.Now().Nanosecond()))
-		index := rand.Intn(2)
-		regionName := regions[index].Name
-		fmt.Println(regions)
+	fmt.Println(result)
 
-		result, responseCode := api.getRegionKeys(regionName)
-		if result == nil {
-			t.Fatalf("API response was nil")
-		}
-
-		if responseCode != 200 && responseCode != 300 {
-			t.Fatalf("Failed to hit api got response code of %i", responseCode)
-		}
-
+	if responseCode != 200 {
+		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
 
 }
@@ -95,8 +85,8 @@ func TestGetEntry(t *testing.T) {
 	//	params := make(map[string]string)
 
 	region := Region{api, "test"}
+	region.clear()
 
-	//	params := make(map[string]string)
 	user := User{"Freddy", "ad"}
 	u, err := json.Marshal(user)
 	if err != nil {
@@ -119,7 +109,6 @@ func TestGetEntry(t *testing.T) {
 
 	fmt.Println(result["Id"])
 
-
 }
 
 func TestBuildRequest(t *testing.T) {
@@ -133,25 +122,14 @@ func TestBuildRequest(t *testing.T) {
 
 	}
 
-	//	params["ignoreMissingKey"] = "true"
-	//	expected = "http://127.0.0.1:8080/gemfire-api/v1/designer/?limit=5&ignoreMissingKey=true"
-	//	result = buildRequest(baseUrl,params)
-	//	if result != expected {
-	//		t.Fatalf("Did not build the URL to be %v got \n %v", expected,result)
-	//
-	//	}
 
 }
 
 func TestCreateEntry(t *testing.T) {
-	//	baseUrl := "http://127.0.0.1:8080/gemfire-api/v1/test/"
-	//	params := make(map[string]string)
-	//
 
 	api := Api{"http://127.0.0.1", "8080"}
 	region := Region{api, "test"}
 
-	//	params := make(map[string]string)
 	user := User{"Freddy", "1asd"}
 	u, err := json.Marshal(user)
 	if err != nil {
@@ -160,3 +138,35 @@ func TestCreateEntry(t *testing.T) {
 	region.put(user.Id, u)
 
 }
+
+func TestDeleteEntries(t *testing.T) {
+	api := Api{"http://127.0.0.1", "8080"}
+	region := Region{api, "test"}
+
+	responseCode := region.clear()
+
+	if responseCode != 200 && responseCode != 201 {
+		t.Fatalf("Failed to hit api got response code of %v", responseCode)
+	}
+
+}
+
+func TestDeleteEntry(t *testing.T) {
+	api := Api{"http://127.0.0.1", "8080"}
+	region := Region{api, "test"}
+
+	user := User{"Freddy", "1asd"}
+	u, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println(err)
+	}
+	region.put(user.Id, u)
+
+	responseCode := region.delete(user.Id)
+
+	if responseCode != 200 && responseCode != 201 {
+		t.Fatalf("Failed to hit api got response code of %v", responseCode)
+	}
+}
+
+

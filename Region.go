@@ -21,7 +21,6 @@ type Region struct {
 }
 
 func (api Api) getRegionKeys(regionName string) ([]string, int) {
-	//	params := make(map[string]string)
 
 	r, err := http.Get(api.Url() + regionName + "/keys")
 	if err != nil {
@@ -129,3 +128,34 @@ func (region Region) put(key string, js []uint8) int {
 
 	return resp.StatusCode
 }
+
+func (region Region) clear() int {
+	url := region.api.Url() + region.Name
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(b))
+
+	return resp.StatusCode
+}
+
+func (region Region) delete(key string) int {
+	url := region.api.Url() + region.Name + "/" + key
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(b))
+
+	return resp.StatusCode
+}
+
