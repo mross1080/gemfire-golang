@@ -7,7 +7,7 @@ import (
 	"net/http"
 	//	"net/url"
 	"bytes"
-	//	"reflect"
+	"strings"
 )
 
 type User struct {
@@ -58,13 +58,22 @@ func (api Api) getRegions(params map[string]string) ([]RegionDef, int) {
 	return m.Regions, r.StatusCode
 }
 
-func (region Region) get(key string) (map[string]string, int) {
+func (region Region) get(keys ...string) (map[string]string, int) {
 
 	var entry map[string]string
 	entry = make(map[string]string)
 	//	params := make(map[string]string)
 
-	r, err := http.Get(region.api.Url() + region.Name + "/" + key)
+	url := region.api.Url() + region.Name + "/"
+	for i, key := range keys {
+		url += key
+		if i != len(keys)-1 {
+			url += ","
+		}
+
+	}
+	fmt.Println(url)
+	r, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -159,3 +168,22 @@ func (region Region) delete(key string) int {
 	return resp.StatusCode
 }
 
+func (region Region) update(key string, js []uint8) int {
+
+	url := region.api.Url() + region.Name + "/" + key
+	payload := strings.NewReader(string(js))
+	req, _ := http.NewRequest("PUT", url, payload)
+	req.Header.Add("content-type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+
+	return res.StatusCode
+}

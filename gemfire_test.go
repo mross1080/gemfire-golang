@@ -107,7 +107,40 @@ func TestGetEntry(t *testing.T) {
 		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
 
-	fmt.Println(result["Id"])
+}
+func TestGetEntries(t *testing.T) {
+
+	api := Api{"http://127.0.0.1", "8080"}
+
+	//	params := make(map[string]string)
+
+	region := Region{api, "test"}
+	region.clear()
+
+	user := User{"Freddy", "34"}
+	u, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println(err)
+	}
+	responseCode := region.put(user.Id, u)
+
+
+	user2 := User{"Sally", "33"}
+	u2, err := json.Marshal(user2)
+	if err != nil {
+		fmt.Println(err)
+	}
+	responseCode = region.put(user2.Id, u2)
+
+	result, responseCode := region.get(user.Id,user2.Id)
+	if result == nil {
+		t.Fatalf("API response was nil")
+	}
+
+	if responseCode != 200 && responseCode != 300 {
+		t.Fatalf("Failed to hit api got response code of %i", responseCode)
+	}
+
 
 }
 
@@ -121,7 +154,6 @@ func TestBuildRequest(t *testing.T) {
 		t.Fatalf("Did not build the URL to be %v got \n %v", expected, result)
 
 	}
-
 
 }
 
@@ -169,4 +201,27 @@ func TestDeleteEntry(t *testing.T) {
 	}
 }
 
+func TestUpdateEntry(t *testing.T) {
+	api := Api{"http://127.0.0.1", "8080"}
+	region := Region{api, "test"}
 
+	user := User{"Freddy", "aa"}
+	u, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	region.put(user.Id, u)
+	user.Name = "Taye Diggs"
+
+	u, err = json.Marshal(user)
+	if err != nil {
+		fmt.Println(err)
+	}
+	responseCode := region.update(user.Id, u)
+
+	if responseCode != 200 && responseCode != 201 {
+		t.Fatalf("Failed to hit api got response code of %v", responseCode)
+	}
+
+}
