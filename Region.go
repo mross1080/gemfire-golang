@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	//	"net/url"
 	"bytes"
 	"strings"
 )
@@ -16,13 +15,13 @@ type User struct {
 }
 
 type Region struct {
-	api  Api
+	Connection  Api
 	Name string
 }
 
-func (api Api) getRegionKeys(regionName string) ([]string, int) {
+func (connection Api) GetRegionKeys(regionName string) ([]string, int) {
 
-	r, err := http.Get(api.Url() + regionName + "/keys")
+	r, err := http.Get(connection.Url() + regionName + "/keys")
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -38,10 +37,10 @@ func (api Api) getRegionKeys(regionName string) ([]string, int) {
 	return nil, r.StatusCode
 }
 
-func (api Api) getRegions(params map[string]string) ([]RegionDef, int) {
+func (connection Api) GetRegions(params map[string]string) ([]RegionDef, int) {
 	var m ClusterRegions
 
-	r, err := http.Get(api.Url())
+	r, err := http.Get(connection.Url())
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -58,13 +57,13 @@ func (api Api) getRegions(params map[string]string) ([]RegionDef, int) {
 	return m.Regions, r.StatusCode
 }
 
-func (region Region) get(keys ...string) (map[string]string, int) {
+func (region Region) Get(keys ...string) (map[string]string, int) {
 
 	var entry map[string]string
 	entry = make(map[string]string)
 	//	params := make(map[string]string)
 
-	url := region.api.Url() + region.Name + "/"
+	url := region.Connection.Url() + region.Name + "/"
 	for i, key := range keys {
 		url += key
 		if i != len(keys)-1 {
@@ -92,12 +91,12 @@ func (region Region) get(keys ...string) (map[string]string, int) {
 
 }
 
-func (api Api) getRegion(regionName string, params map[string]string) (map[string][]map[string]string, int) {
+func (connection Api) GetRegion(regionName string, params map[string]string) (map[string][]map[string]string, int) {
 	entry := make(map[string][]map[string]string)
 
-	url := buildRequest(api.Url()+regionName, params)
+	url := buildRequest(connection.Url()+regionName, params)
 	r, err := http.Get(url)
-	fmt.Println("making get to ", api.Url()+regionName)
+	fmt.Println("making get to ", connection.Url()+regionName)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -116,9 +115,9 @@ func (api Api) getRegion(regionName string, params map[string]string) (map[strin
 
 }
 
-func (region Region) put(key string, js []uint8) int {
+func (region Region) Put(key string, js []uint8) int {
 
-	url := region.api.Url() + region.Name + "/?key=" + key
+	url := region.Connection.Url() + region.Name + "/?key=" + key
 
 	var body = []byte(string(js))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -138,8 +137,8 @@ func (region Region) put(key string, js []uint8) int {
 	return resp.StatusCode
 }
 
-func (region Region) clear() int {
-	url := region.api.Url() + region.Name
+func (region Region) Clear() int {
+	url := region.Connection.Url() + region.Name
 
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -153,8 +152,8 @@ func (region Region) clear() int {
 	return resp.StatusCode
 }
 
-func (region Region) delete(key string) int {
-	url := region.api.Url() + region.Name + "/" + key
+func (region Region) Delete(key string) int {
+	url := region.Connection.Url() + region.Name + "/" + key
 
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -168,9 +167,9 @@ func (region Region) delete(key string) int {
 	return resp.StatusCode
 }
 
-func (region Region) update(key string, js []uint8) int {
+func (region Region) Update(key string, js []uint8) int {
 
-	url := region.api.Url() + region.Name + "/" + key
+	url := region.Connection.Url() + region.Name + "/" + key
 	payload := strings.NewReader(string(js))
 	req, _ := http.NewRequest("PUT", url, payload)
 	req.Header.Add("content-type", "application/json")

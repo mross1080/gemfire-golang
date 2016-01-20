@@ -14,7 +14,7 @@ func TestGetRegions(t *testing.T) {
 
 	params := make(map[string]string)
 
-	result, responseCode := api.getRegions(params)
+	result, responseCode := api.GetRegions(params)
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -34,7 +34,7 @@ func TestGetRegion(t *testing.T) {
 
 	params["limit"] = strconv.Itoa(entrylimit)
 
-	entries, responseCode := api.getRegion(regionName, params)
+	entries, responseCode := api.GetRegion(regionName, params)
 	if len(entries[regionName]) > entrylimit {
 		t.Fatalf("Set limit of 2 results got back ", len(entries))
 	}
@@ -65,7 +65,7 @@ func TestGetKeysForRegion(t *testing.T) {
 	api := Api{"http://127.0.0.1", "8080"}
 	region := Region{api, "test"}
 
-	result, responseCode := api.getRegionKeys(region.Name)
+	result, responseCode := api.GetRegionKeys(region.Name)
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -85,20 +85,20 @@ func TestGetEntry(t *testing.T) {
 	//	params := make(map[string]string)
 
 	region := Region{api, "test"}
-	region.clear()
+	region.Clear()
 
 	user := User{"Freddy", "ad"}
 	u, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
 	}
-	responseCode := region.put(user.Id, u)
+	responseCode := region.Put(user.Id, u)
 
 	if responseCode != 200 && responseCode != 201 {
 		t.Fatalf("Failed to hit api got response code of %v", responseCode)
 	}
 
-	result, responseCode := region.get(user.Id)
+	result, responseCode := region.Get(user.Id)
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -115,14 +115,14 @@ func TestGetEntries(t *testing.T) {
 	//	params := make(map[string]string)
 
 	region := Region{api, "test"}
-	region.clear()
+	region.Clear()
 
 	user := User{"Freddy", "34"}
 	u, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
 	}
-	responseCode := region.put(user.Id, u)
+	responseCode := region.Put(user.Id, u)
 
 
 	user2 := User{"Sally", "33"}
@@ -130,9 +130,9 @@ func TestGetEntries(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	responseCode = region.put(user2.Id, u2)
+	responseCode = region.Put(user2.Id, u2)
 
-	result, responseCode := region.get(user.Id,user2.Id)
+	result, responseCode := region.Get(user.Id,user2.Id)
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -167,7 +167,7 @@ func TestCreateEntry(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	region.put(user.Id, u)
+	region.Put(user.Id, u)
 
 }
 
@@ -175,7 +175,7 @@ func TestDeleteEntries(t *testing.T) {
 	api := Api{"http://127.0.0.1", "8080"}
 	region := Region{api, "test"}
 
-	responseCode := region.clear()
+	responseCode := region.Clear()
 
 	if responseCode != 200 && responseCode != 201 {
 		t.Fatalf("Failed to hit api got response code of %v", responseCode)
@@ -192,9 +192,9 @@ func TestDeleteEntry(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	region.put(user.Id, u)
+	region.Put(user.Id, u)
 
-	responseCode := region.delete(user.Id)
+	responseCode := region.Delete(user.Id)
 
 	if responseCode != 200 && responseCode != 201 {
 		t.Fatalf("Failed to hit api got response code of %v", responseCode)
@@ -211,14 +211,14 @@ func TestUpdateEntry(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	region.put(user.Id, u)
+	region.Put(user.Id, u)
 	user.Name = "Taye Diggs"
 
 	u, err = json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
 	}
-	responseCode := region.update(user.Id, u)
+	responseCode := region.Update(user.Id, u)
 
 	if responseCode != 200 && responseCode != 201 {
 		t.Fatalf("Failed to hit api got response code of %v", responseCode)

@@ -7,12 +7,12 @@ import (
 )
 
 type Api struct {
-	hostName string
-	port     string
+	HostName string
+	Port     string
 }
 
 func (api Api) Url() string {
-	return api.hostName + ":" + api.port + "/gemfire-api/v1/"
+	return api.HostName + ":" + api.Port + "/gemfire-api/v1/"
 }
 
 type RegionDef struct {
