@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"net/url"
+	"net/http"
+	"io/ioutil"
+	"encoding/json"
 )
 
 type Api struct {
@@ -68,4 +72,40 @@ func buildRequest(baseUrl string, params map[string]string) string {
 		fmt.Println(baseUrl)
 	}
 	return baseUrl
+}
+
+func (connection Api) AdHocQuery(queryString string) ([]interface{},int) {
+
+	fmt.Println("Asdjh")
+	qs, _ := Encode(queryString)
+	url := connection.Url()+ "queries/adhoc?q="+ qs
+	r, err := http.Get(url)
+	var entry []interface{}
+	fmt.Println("making get to ",url)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		defer r.Body.Close()
+		requestBody, _ := ioutil.ReadAll(r.Body)
+		e := json.Unmarshal(requestBody, &entry)
+		if e != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("Returned", entry)
+
+		return entry, 200
+	}
+
+	return entry, 200
+
+
+
+}
+
+func Encode(str string) (string, error) {
+	u, err := url.Parse(str)
+	if err != nil {
+		return "", err
+	}
+	return u.String(), nil
 }

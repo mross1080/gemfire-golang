@@ -3,18 +3,15 @@ package gemfireGolang
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"testing"
 	//	"reflect"
 )
 
 func TestGetRegions(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 
-	params := make(map[string]string)
-
-	result, responseCode := api.GetRegions(params)
+	result, responseCode := api.GetRegions()
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -27,27 +24,21 @@ func TestGetRegions(t *testing.T) {
 
 func TestGetRegion(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
-	regionName := "designer"
-	params := make(map[string]string)
-	entrylimit := 3
-
-	params["limit"] = strconv.Itoa(entrylimit)
-
-	entries, responseCode := api.GetRegion(regionName, params)
-	if len(entries[regionName]) > entrylimit {
-		t.Fatalf("Set limit of 2 results got back ", len(entries))
-	}
+	api := Api{"http://127.0.0.1", "8081"}
+	regionName := "test"
+	entries, responseCode := api.GetRegion(regionName)
 
 	if responseCode != 200 {
 		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
 
+	fmt.Println(entries)
+
 }
 
 func TestGetFunctions(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 
 	result, responseCode := api.getFunctions()
 	if result == nil {
@@ -62,10 +53,10 @@ func TestGetFunctions(t *testing.T) {
 
 func TestGetKeysForRegion(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-	result, responseCode := api.GetRegionKeys(region.Name)
+	result, responseCode := region.GetKeys()
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -80,7 +71,7 @@ func TestGetKeysForRegion(t *testing.T) {
 
 func TestGetEntry(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 
 	//	params := make(map[string]string)
 
@@ -110,7 +101,7 @@ func TestGetEntry(t *testing.T) {
 }
 func TestGetEntries(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 
 	//	params := make(map[string]string)
 
@@ -145,10 +136,10 @@ func TestGetEntries(t *testing.T) {
 }
 
 func TestBuildRequest(t *testing.T) {
-	baseUrl := "http://127.0.0.1:8080/gemfire-api/v1/designer/"
+	baseUrl := "http://127.0.0.1:8081/gemfire-api/v1/designer/"
 	params := make(map[string]string)
 	params["limit"] = "5"
-	expected := "http://127.0.0.1:8080/gemfire-api/v1/designer/?limit=5"
+	expected := "http://127.0.0.1:8081/gemfire-api/v1/designer/?limit=5"
 	result := buildRequest(baseUrl, params)
 	if result != expected {
 		t.Fatalf("Did not build the URL to be %v got \n %v", expected, result)
@@ -159,23 +150,42 @@ func TestBuildRequest(t *testing.T) {
 
 func TestCreateEntry(t *testing.T) {
 
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-	user := User{"Freddy", "1asd"}
+	region.Clear()
+	user := struct{Name string
+				   Age string
+				   Id string
+				   Company string}{
+		"Bugsy Siegel",
+		"22",
+		"100",
+		"Carrot Company"}
+
+
 	u, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
 	}
 	region.Put(user.Id, u)
+	entry, _ := region.Get(user.Id)
+	if  len(entry) == 0{
+		t.Fatalf("Failed to put the object in the region")
+	}
+	fmt.Println("result is ",entry)
 
 }
 
 func TestDeleteEntries(t *testing.T) {
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-	responseCode := region.Clear()
+//	responseCode := region.Clear()
+
+	regionEntires, responseCode := api.GetRegion(region.Name)
+
+	fmt.Println(regionEntires)
 
 	if responseCode != 200 && responseCode != 201 {
 		t.Fatalf("Failed to hit api got response code of %v", responseCode)
@@ -184,7 +194,7 @@ func TestDeleteEntries(t *testing.T) {
 }
 
 func TestDeleteEntry(t *testing.T) {
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
 	user := User{"Freddy", "1asd"}
@@ -202,17 +212,23 @@ func TestDeleteEntry(t *testing.T) {
 }
 
 func TestUpdateEntry(t *testing.T) {
-	api := Api{"http://127.0.0.1", "8080"}
+	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-	user := User{"Freddy", "aa"}
+//	user := User{"Freddy", "aa"
+	user := struct{Name string
+				   Age string
+				   Id string}{
+		"Bobby Booshay",
+		"234",
+		"12"}
 	u, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	region.Put(user.Id, u)
-	user.Name = "Taye Diggs"
+	user.Name = "Taye Diggddds"
 
 	u, err = json.Marshal(user)
 	if err != nil {
@@ -223,5 +239,40 @@ func TestUpdateEntry(t *testing.T) {
 	if responseCode != 200 && responseCode != 201 {
 		t.Fatalf("Failed to hit api got response code of %v", responseCode)
 	}
+
+}
+
+
+func TestAdhocQuery(t *testing.T) {
+	api := Api{"http://127.0.0.1", "8081"}
+	region := Region{api, "test"}
+
+	user := struct{Name string
+				   Age string
+				   Id string}{
+		"Bobby Booshay",
+		"234",
+		"12"}
+	u, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	region.Put(user.Id, u)
+	result, _ := region.Get(user.Id)
+	if result == nil {
+		t.Fatalf("Failed to seed database")
+	}
+
+	queryString := "select Name,Age from /test"
+
+	queryResults, responseCode := api.AdHocQuery(queryString)
+
+	if responseCode != 200 {
+		t.Fatalf("Failed to execute query")
+
+	}
+
+	fmt.Println(queryResults)
 
 }

@@ -19,9 +19,9 @@ type Region struct {
 	Name string
 }
 
-func (connection Api) GetRegionKeys(regionName string) ([]string, int) {
+func (region Region) GetKeys() ([]string, int) {
 
-	r, err := http.Get(connection.Url() + regionName + "/keys")
+	r, err := http.Get(region.Connection.Url() + region.Name + "/keys")
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -37,7 +37,7 @@ func (connection Api) GetRegionKeys(regionName string) ([]string, int) {
 	return nil, r.StatusCode
 }
 
-func (connection Api) GetRegions(params map[string]string) ([]RegionDef, int) {
+func (connection Api) GetRegions() ([]RegionDef, int) {
 	var m ClusterRegions
 
 	r, err := http.Get(connection.Url())
@@ -57,10 +57,10 @@ func (connection Api) GetRegions(params map[string]string) ([]RegionDef, int) {
 	return m.Regions, r.StatusCode
 }
 
-func (region Region) Get(keys ...string) (map[string]string, int) {
+func (region Region) Get(keys ...string) (map[string]interface{}, int) {
 
-	var entry map[string]string
-	entry = make(map[string]string)
+	var entry map[string]interface{}
+	entry = make(map[string]interface{})
 	//	params := make(map[string]string)
 
 	url := region.Connection.Url() + region.Name + "/"
@@ -91,10 +91,10 @@ func (region Region) Get(keys ...string) (map[string]string, int) {
 
 }
 
-func (connection Api) GetRegion(regionName string, params map[string]string) (map[string][]map[string]string, int) {
+func (connection Api) GetRegion(regionName string) (map[string][]map[string]string, int) {
 	entry := make(map[string][]map[string]string)
 
-	url := buildRequest(connection.Url()+regionName, params)
+	url := connection.Url()+regionName
 	r, err := http.Get(url)
 	fmt.Println("making get to ", connection.Url()+regionName)
 	if err != nil {
@@ -147,7 +147,8 @@ func (region Region) Clear() int {
 	resp, err := http.DefaultClient.Do(req)
 
 	b, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(b))
+	fmt.Println(b)
+	fmt.Println("Cleared Region",region.Name)
 
 	return resp.StatusCode
 }
