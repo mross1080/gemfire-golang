@@ -279,11 +279,24 @@ func TestAdhocQuery(t *testing.T) {
 
 }
 
+func TestRegisterQuery(t *testing.T) {
+	api := Api{"http://127.0.0.1", "8081"}
+
+	queryString := "select Name,Id from /test"
+	responseCode := api.RegisterQuery("1223", queryString)
+
+	if responseCode != 201 {
+		t.Fatalf("Failed to execute query")
+
+	}
+
+}
+
 func TestExecuteQuery(t *testing.T) {
 
 	api := Api{"http://127.0.0.1", "8081"}
 
-	_, responseCode := api.ExecuteQuery("12", "")
+	_, responseCode := api.ExecuteQuery("123", "")
 
 	if responseCode != 200 {
 		t.Fatalf("Failed to execute query")

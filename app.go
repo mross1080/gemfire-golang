@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"bytes"
 )
 
 type Api struct {
@@ -77,7 +78,6 @@ func buildRequest(baseUrl string, params map[string]string) string {
 
 func (connection Api) AdHocQuery(queryString string) ([]interface{}, int) {
 
-	fmt.Println("Asdjh")
 	qs, _ := Encode(queryString)
 	url := connection.Url() + "queries/adhoc?q=" + qs
 	r, err := http.Get(url)
@@ -99,6 +99,32 @@ func (connection Api) AdHocQuery(queryString string) ([]interface{}, int) {
 
 	return entry, 200
 
+}
+
+func (connection Api) RegisterQuery(id string, queryString string) int {
+
+	qs, _ := Encode(queryString)
+
+	url := connection.Url() + "queries/?id=" + id + "&q=" + qs
+
+	fmt.Println("Registering query to ",url)
+	fmt.Println("queryString is",url)
+	var body = []byte(string(""))
+	req, err := http.NewRequest("POST", url,  bytes.NewBuffer(body))
+	req.Header.Set("X-Custom-Header", "entry-value")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("response Body:", string(b))
+
+	return resp.StatusCode
 }
 
 func (connection Api) ExecuteQuery(id string, params string) ([]interface{}, int) {
