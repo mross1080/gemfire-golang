@@ -1,13 +1,14 @@
 package gemfireGolang
 
 import (
-	"fmt"
-	"math/rand"
-	"time"
-	"net/url"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 type Api struct {
@@ -74,14 +75,14 @@ func buildRequest(baseUrl string, params map[string]string) string {
 	return baseUrl
 }
 
-func (connection Api) AdHocQuery(queryString string) ([]interface{},int) {
+func (connection Api) AdHocQuery(queryString string) ([]interface{}, int) {
 
 	fmt.Println("Asdjh")
 	qs, _ := Encode(queryString)
-	url := connection.Url()+ "queries/adhoc?q="+ qs
+	url := connection.Url() + "queries/adhoc?q=" + qs
 	r, err := http.Get(url)
 	var entry []interface{}
-	fmt.Println("making get to ",url)
+	fmt.Println("making get to ", url)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -98,7 +99,39 @@ func (connection Api) AdHocQuery(queryString string) ([]interface{},int) {
 
 	return entry, 200
 
+}
 
+func (connection Api) ExecuteQuery(id string, params string) ([]interface{}, int) {
+
+	if params == "" {
+		params = "[\n    {\"@type\":\"int\",\n        \"@value\":2\n    }\n    ]"
+	}
+
+	url := connection.Url() + "queries/" + id
+	payload := strings.NewReader(string(params))
+	req, _ := http.NewRequest("POST", url, payload)
+	req.Header.Add("content-type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+	var results []interface{}
+
+	if err != nil {
+		panic(err)
+	} else {
+		defer res.Body.Close()
+		body, _ := ioutil.ReadAll(res.Body)
+		e := json.Unmarshal(body, &results)
+		if e != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("Returned", results)
+
+		return results, 200
+
+	}
+
+	var a []interface{}
+
+	return a, res.StatusCode
 
 }
 

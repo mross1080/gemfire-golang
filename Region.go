@@ -1,11 +1,11 @@
 package gemfireGolang
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"bytes"
 	"strings"
 )
 
@@ -15,8 +15,8 @@ type User struct {
 }
 
 type Region struct {
-	Connection  Api
-	Name string
+	Connection Api
+	Name       string
 }
 
 func (region Region) GetKeys() ([]string, int) {
@@ -94,7 +94,7 @@ func (region Region) Get(keys ...string) (map[string]interface{}, int) {
 func (connection Api) GetRegion(regionName string) (map[string][]map[string]string, int) {
 	entry := make(map[string][]map[string]string)
 
-	url := connection.Url()+regionName
+	url := connection.Url() + regionName
 	r, err := http.Get(url)
 	fmt.Println("making get to ", connection.Url()+regionName)
 	if err != nil {
@@ -148,7 +148,7 @@ func (region Region) Clear() int {
 
 	b, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(b)
-	fmt.Println("Cleared Region",region.Name)
+	fmt.Println("Cleared Region", region.Name)
 
 	return resp.StatusCode
 }

@@ -115,7 +115,6 @@ func TestGetEntries(t *testing.T) {
 	}
 	responseCode := region.Put(user.Id, u)
 
-
 	user2 := User{"Sally", "33"}
 	u2, err := json.Marshal(user2)
 	if err != nil {
@@ -123,7 +122,7 @@ func TestGetEntries(t *testing.T) {
 	}
 	responseCode = region.Put(user2.Id, u2)
 
-	result, responseCode := region.Get(user.Id,user2.Id)
+	result, responseCode := region.Get(user.Id, user2.Id)
 	if result == nil {
 		t.Fatalf("API response was nil")
 	}
@@ -131,7 +130,6 @@ func TestGetEntries(t *testing.T) {
 	if responseCode != 200 && responseCode != 300 {
 		t.Fatalf("Failed to hit api got response code of %i", responseCode)
 	}
-
 
 }
 
@@ -154,15 +152,16 @@ func TestCreateEntry(t *testing.T) {
 	region := Region{api, "test"}
 
 	region.Clear()
-	user := struct{Name string
-				   Age string
-				   Id string
-				   Company string}{
+	user := struct {
+		Name    string
+		Age     string
+		Id      string
+		Company string
+	}{
 		"Bugsy Siegel",
 		"22",
 		"100",
 		"Carrot Company"}
-
 
 	u, err := json.Marshal(user)
 	if err != nil {
@@ -170,10 +169,10 @@ func TestCreateEntry(t *testing.T) {
 	}
 	region.Put(user.Id, u)
 	entry, _ := region.Get(user.Id)
-	if  len(entry) == 0{
+	if len(entry) == 0 {
 		t.Fatalf("Failed to put the object in the region")
 	}
-	fmt.Println("result is ",entry)
+	fmt.Println("result is ", entry)
 
 }
 
@@ -181,7 +180,7 @@ func TestDeleteEntries(t *testing.T) {
 	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-//	responseCode := region.Clear()
+	//	responseCode := region.Clear()
 
 	regionEntires, responseCode := api.GetRegion(region.Name)
 
@@ -215,10 +214,12 @@ func TestUpdateEntry(t *testing.T) {
 	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-//	user := User{"Freddy", "aa"
-	user := struct{Name string
-				   Age string
-				   Id string}{
+	//	user := User{"Freddy", "aa"
+	user := struct {
+		Name string
+		Age  string
+		Id   string
+	}{
 		"Bobby Booshay",
 		"234",
 		"12"}
@@ -242,17 +243,18 @@ func TestUpdateEntry(t *testing.T) {
 
 }
 
-
 func TestAdhocQuery(t *testing.T) {
 	api := Api{"http://127.0.0.1", "8081"}
 	region := Region{api, "test"}
 
-	user := struct{Name string
-				   Age string
-				   Id string}{
+	user := struct {
+		Name string
+		Age  string
+		Id   string
+	}{
 		"Bobby Booshay",
 		"234",
-		"12"}
+		"1552"}
 	u, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
@@ -264,7 +266,7 @@ func TestAdhocQuery(t *testing.T) {
 		t.Fatalf("Failed to seed database")
 	}
 
-	queryString := "select Name,Age from /test"
+	queryString := "select Name,Age from /test where Id='1552'"
 
 	queryResults, responseCode := api.AdHocQuery(queryString)
 
@@ -274,5 +276,20 @@ func TestAdhocQuery(t *testing.T) {
 	}
 
 	fmt.Println(queryResults)
+
+}
+
+func TestExecuteQuery(t *testing.T) {
+
+	api := Api{"http://127.0.0.1", "8081"}
+
+	_, responseCode := api.ExecuteQuery("12", "")
+
+	if responseCode != 200 {
+		t.Fatalf("Failed to execute query")
+
+	}
+
+	fmt.Println("asdf")
 
 }
